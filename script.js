@@ -12,18 +12,16 @@ const GAMES = [
 const STORAGE_KEY = 'gacha_banners_v1';
 
 // Per-game known news endpoints (used as fallbacks when no sourceUrl provided)
+// NOTE: most of these will fail with a CORS error from the browser — see fetchSource().
 const GAME_FETCH_RULES = {
 	genshin: [
-		'https://genshin.hoyoverse.com/en/news',
-		'https://www.hoyolab.com/article' // generic HoYoLAB article base
+		'https://genshin.hoyoverse.com/en/news'
 	],
 	hsr: [
-		'https://www.honkaistarrail.com/en/news',
-		'https://hsr.hoyoverse.com/en-us/news'
+		'https://www.honkaistarrail.com/en/news'
 	],
 	arknights: [
-		'https://www.arknights.global/en/news',
-		'https://ak.hypergryph.com/news'
+		'https://www.arknights.global/en/news'
 	],
 	wuthering: [
 		'https://wutheringwaves.kurogame.com/en/main'
@@ -31,9 +29,7 @@ const GAME_FETCH_RULES = {
 	zenless: [
 		'https://zzzh.hoyoverse.com/en/news'
 	],
-	duet: [
-		// no official known news endpoint; user should provide source
-	]
+	duet: []
 };
 
 function $(id){ return document.getElementById(id); }
@@ -59,6 +55,10 @@ function populateGames(){
 		const g = GAMES.find(x=>x.id===sel.value);
 		if(g) $('durationDays').value = g.defaultDays;
 	});
+	// set initial duration to match the first game in the list
+	if(GAMES.length){
+		$('durationDays').value = GAMES[0].defaultDays;
+	}
 }
 
 function formatRemaining(ms){
@@ -120,13 +120,21 @@ async function fetchSource(id){
 	const list = loadBanners();
 	const b = list.find(x=>x.id===id);
 	if(!b){ alert('Banner not found'); return; }
+
 	// try specific sourceUrl first, then fall back to GAME_FETCH_RULES
 	const candidates = [];
 	if(b.sourceUrl) candidates.push(b.sourceUrl);
 	const rules = GAME_FETCH_RULES[b.gameId] || [];
 	for(const u of rules) if(!candidates.includes(u)) candidates.push(u);
 
+	if(candidates.length === 0){
+		alert('No source URL configured for this game. Add one manually in "Source (URL)".');
+		return;
+	}
+
 	let success = false;
+	let lastErrorWasLikelyCors = false;
+
 	for(const url of candidates){
 		const controller = new AbortController();
 		const timeout = setTimeout(()=>controller.abort(), 8000);
@@ -134,15 +142,15 @@ async function fetchSource(id){
 			const res = await fetch(url, { signal: controller.signal });
 			clearTimeout(timeout);
 			const ct = res.headers.get('content-type') || '';
-			let foundStart = null, foundEnd = null;
+			let foundEnd = null;
 			if(ct.includes('application/json')){
 				const j = await res.json();
 				const parsed = parseDatesFromJSON(j);
-				foundStart = parsed.start; foundEnd = parsed.end;
+				foundEnd = parsed.end;
 			} else {
 				const text = await res.text();
 				const parsed = parseDatesFromText(text);
-				foundStart = parsed.start; foundEnd = parsed.end;
+				foundEnd = parsed.end;
 			}
 
 			if(foundEnd){
@@ -158,26 +166,35 @@ async function fetchSource(id){
 		}catch(err){
 			clearTimeout(timeout);
 			console.warn('fetch failed for', url, err);
+			// TypeError with no further detail is the typical signature of a CORS block
+			if(err instanceof TypeError) lastErrorWasLikelyCors = true;
 			// try next candidate
 		}
 	}
+
 	if(!success){
-		alert('Failed to fetch end date from any available source (could be due to CORS or no extractable dates).');
+		if(lastErrorWasLikelyCors){
+			alert('Could not reach the source automatically — this is almost always a CORS restriction ' +
+				'(the official site does not allow requests from browser pages on other domains). ' +
+				'You will need to update the end date manually, or paste the news text using the ' +
+				'"Parse pasted text" option if you add one.');
+		} else {
+			alert('Failed to fetch end date: no recognizable date pattern found in the page content.');
+		}
 	}
 }
 
 function parseDatesFromJSON(j){
-	// try common keys
 	const candidates = ['end','endDate','end_date','finish','to','until'];
 	const startCandidates = ['start','startDate','start_date','from'];
 	const flat = JSON.stringify(j);
 	for(const k of candidates){
-		const re = new RegExp(`"${k}"\s*:\s*"([0-9]{4}-[0-9]{2}-[0-9]{2})`,'i');
+		const re = new RegExp(`"${k}"\\s*:\\s*"([0-9]{4}-[0-9]{2}-[0-9]{2})`,'i');
 		const m = flat.match(re);
 		if(m) return { end: m[1], start: null };
 	}
 	for(const k of startCandidates){
-		const re = new RegExp(`"${k}"\s*:\s*"([0-9]{4}-[0-9]{2}-[0-9]{2})`,'i');
+		const re = new RegExp(`"${k}"\\s*:\\s*"([0-9]{4}-[0-9]{2}-[0-9]{2})`,'i');
 		const m = flat.match(re);
 		if(m) return { start: m[1], end: null };
 	}
@@ -196,8 +213,10 @@ function parseDatesFromText(text){
 	if(rangeIso) return { start: rangeIso[1], end: rangeIso[2] };
 
 	// 3) long month formats like "July 1, 2026" — capture multiple occurrences
+	// FIX: \d must be escaped as \\d inside the JS string literal, otherwise it
+	// degrades to the literal letter "d" and never matches a digit.
 	const monthNames = '(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec)';
-	const longRe = new RegExp(monthNames + '\\s+\d{1,2},?\\s+\d{4}','gi');
+	const longRe = new RegExp(monthNames + '\\s+\\d{1,2},?\\s+\\d{4}','gi');
 	const longMatches = text.match(longRe);
 	if(longMatches && longMatches.length>0){
 		const parsed = longMatches.map(s=>new Date(s));
@@ -210,69 +229,76 @@ function parseDatesFromText(text){
 	}
 
 	// 4) datetime attributes or meta tags
-	const dt = text.match(/datetime=\"([^\"]{8,30})\"/i);
+	const dt = text.match(/datetime="([^"]{8,30})"/i);
 	if(dt) return { start:null, end: dt[1] };
 
 	return { start:null, end:null };
 }
 
-function tick(){
-	const nodes = document.querySelectorAll('.banner .remaining');
+function addBannerFromForm(e){
+	e.preventDefault();
+
+	const gameId = $('gameSelect').value;
+	const game = GAMES.find(g=>g.id===gameId);
+	if(!game) return;
+
+	const startVal = $('startDate').value;
+	const days = parseInt($('durationDays').value, 10);
+	if(!startVal || isNaN(days) || days <= 0){
+		alert('Please provide a valid start date and duration.');
+		return;
+	}
+
+	const end = new Date(startVal);
+	end.setDate(end.getDate() + days);
+
+	const banner = {
+		id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+		gameId,
+		gameName: game.name,
+		bannerName: $('bannerName').value.trim() || 'Unnamed banner',
+		startDate: startVal,
+		endDate: end.toISOString().slice(0,10),
+		sourceUrl: $('sourceUrl').value.trim(),
+		fetchMethod: $('fetchMethod').value
+	};
+
 	const list = loadBanners();
-	nodes.forEach((node, i)=>{
-		const b = list[i];
-		if(!b) return;
-		const rem = new Date(b.endDate).getTime() - Date.now();
-		node.textContent = formatRemaining(rem);
-	});
-}
-
-function initForm(){
-	const form = $('bannerForm');
-	form.addEventListener('submit', (e)=>{
-		e.preventDefault();
-		const gameId = $('gameSelect').value;
-		const game = GAMES.find(g=>g.id===gameId) || {name:gameId};
-		const bannerName = $('bannerName').value.trim();
-		const startDate = $('startDate').value;
-		const days = parseInt($('durationDays').value,10) || 0;
-		const sourceUrl = $('sourceUrl').value.trim();
-		const fetchMethod = $('fetchMethod').value;
-
-		if(!startDate || !bannerName){ alert('Please fill in the required fields.'); return; }
-
-		// compute endDate
-		const start = new Date(startDate);
-		const end = new Date(start.getTime() + days*24*60*60*1000);
-
-		const banners = loadBanners();
-		banners.push({
-			id: String(Date.now()),
-			gameId, gameName: game.name,
-			bannerName, startDate: startDate,
-			endDate: end.toISOString().slice(0,10),
-			durationDays: days,
-			sourceUrl, fetchMethod
-		});
-		saveBanners(banners);
-		form.reset();
-		// reset duration to selected game's default
-		const g = GAMES.find(x=>x.id===gameId);
-		if(g) $('durationDays').value = g.defaultDays;
-		renderBanners();
-	});
-
-	$('loadPresets').addEventListener('click', ()=>{
-		const g = GAMES[0];
-		if(g) $('durationDays').value = g.defaultDays;
-		alert('Presets loaded to form — Please select a game and fill in the details.');
-	});
-}
-
-document.addEventListener('DOMContentLoaded', ()=>{
-	populateGames();
-	initForm();
+	list.push(banner);
+	saveBanners(list);
 	renderBanners();
-	setInterval(()=>{ renderBanners(); }, 1000);
-});
+	e.target.reset();
+	populateGames(); // reset duration field to first game's default after form.reset()
+}
 
+function loadPresets(){
+	const today = new Date().toISOString().slice(0,10);
+	const presets = GAMES.map(g=>{
+		const end = new Date();
+		end.setDate(end.getDate() + g.defaultDays);
+		return {
+			id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + g.id),
+			gameId: g.id,
+			gameName: g.name,
+			bannerName: 'Example banner',
+			startDate: today,
+			endDate: end.toISOString().slice(0,10),
+			sourceUrl: '',
+			fetchMethod: 'manual'
+		};
+	});
+	saveBanners(presets);
+	renderBanners();
+}
+
+function init(){
+	populateGames();
+	renderBanners();
+	$('bannerForm').addEventListener('submit', addBannerFromForm);
+	$('loadPresets').addEventListener('click', loadPresets);
+
+	// keep countdowns live without needing a manual refresh
+	setInterval(renderBanners, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', init);
