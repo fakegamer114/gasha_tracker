@@ -1,0 +1,22 @@
+:root{ --bg:#0f1720; --card:#0b1220; --muted:#9aa4b2; --accent:#3b82f6; }
+*{box-sizing:border-box}
+body{font-family:system-ui,Segoe UI,Helvetica,Arial; margin:0; padding:24px; background:#f6f8fa; color:#111}
+.container{max-width:820px;margin:0 auto}
+h1{margin:0 0 12px;background-color: #123; color: #fff; padding: 12px; border-radius: 6px; text-align: center}
+h2{margin:16px 0 8px; text-align: center;}
+form label{display:block;margin:8px 0}
+input, select{width:100%;padding:8px;border:1px solid #ccc;border-radius:4px}
+.form-actions{display:flex;gap:8px;margin-top:12px}
+button{padding:8px 12px;border-radius:6px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+button#loadPresets{background:#6b7280}
+.banner{border:1px solid #e5e7eb;padding:10px;border-radius:6px;margin:8px 0;background:#fff}
+.banner-head{display:flex;justify-content:space-between;align-items:center}
+.remaining{font-weight:600;margin-top:6px}
+.source{color:var(--muted);font-size:13px;margin-top:6px}
+
+@media (prefers-color-scheme:dark){
+	body{background:#071019;color:#d7e6f2}
+	input, select{background:#071a26;color:#d7e6f2;border:1px solid #123}
+	.banner{background:#07131a;border:1px solid #123}
+	button#loadPresets{background:#374151}
+}

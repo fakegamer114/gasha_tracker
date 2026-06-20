@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="simple GACHA tracker to help you keep track on how much time is left before the limited character banner ends">
+    <title>GACHA tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<!--supported games: Wuthering Waves, Zenless Zone Zero, Genshin Impact, Arknights, Honkai: Star Rail, Duet Night Abyss-->
+<body>
+    <main class="container">
+        <h1>GACHA Tracker</h1>
+
+        <section class="add-banner">
+            <h2>Add Banner</h2>
+            <form id="bannerForm">
+                <label>Game
+                    <select id="gameSelect" required></select>
+                </label>
+
+                <label>Banner name
+                    <input id="bannerName" type="text" placeholder="e.g. Limited Character" required>
+                </label>
+
+                <label>Start date
+                    <input id="startDate" type="date" required>
+                </label>
+
+                <label>Duration (days)
+                    <input id="durationDays" type="number" min="1" value="14" required>
+                </label>
+
+                <label>Source (URL)
+                    <input id="sourceUrl" type="url" placeholder="https://example.com/news">
+                </label>
+
+                <label>Fetch method
+                    <select id="fetchMethod">
+                        <option value="manual">manual</option>
+                        <option value="api">API / JSON</option>
+                        <option value="rss">RSS</option>
+                        <option value="scrape">Scrape</option>
+                    </select>
+                </label>
+
+                <div class="form-actions">
+                    <button type="submit">Add Banner</button>
+                    <button type="button" id="loadPresets">Load presets</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="list-banner">
+            <h2>Current Banners</h2>
+            <div id="bannersList">No banners yet.</div>
+        </section>
+    </main>
+
+</body>
+</html>
