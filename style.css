@@ -13,10 +13,32 @@ button#loadPresets{background:#6b7280}
 .banner-head{display:flex;justify-content:space-between;align-items:center}
 .remaining{font-weight:600;margin-top:6px}
 .source{color:var(--muted);font-size:13px;margin-top:6px}
+.add-banner, .list-banner{margin-top:24px ; padding:12px; border-radius:6px; background-color: #123; border:1px solid #2f353f}
+
+/* Responsive improvements for banners list (mobile-friendly) */
+.container{padding:0 12px}
+.banner{word-break:break-word;overflow-wrap:break-word;hyphens:auto}
+.banner-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.banner-head strong{flex:1 1 auto;min-width:0}
+.banner-head > div{display:flex;gap:8px;align-items:center}
+.banner-head button{padding:6px 8px;font-size:13px;min-width:44px}
+.form-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.form-actions button{flex:0 1 auto}
+.banner-actions{display:flex;justify-content:right;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:right}
+
+@media (max-width:600px){
+	.container{padding:12px}
+	.banner{padding:10px;font-size:14px}
+	.banner-head{align-items:flex-start}
+	.banner-head > div{width:100%;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+	.banner-head button{flex:0 1 auto}
+	.banner .remaining, .banner .source, .banner div{font-size:13px}
+	button{padding:10px 12px}
+}
 
 @media (prefers-color-scheme:dark){
-	body{background:#071019;color:#d7e6f2}
-	input, select{background:#071a26;color:#d7e6f2;border:1px solid #123}
-	.banner{background:#07131a;border:1px solid #123}
-	button#loadPresets{background:#374151}
+		body{background:#071019;color:#d7e6f2}
+		input, select{background:#071a26;color:#d7e6f2;border:1px solid #123}
+		.banner{background:#07131a;border:1px solid #123}
+		button#loadPresets{background:#374151}
 }

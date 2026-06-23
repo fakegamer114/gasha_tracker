@@ -1,12 +1,23 @@
 /* Simple banner manager: presets, localStorage, countdowns */
 
 const GAMES = [
+    { id: 'genshin', name: 'Genshin Impact', defaultDays: 21 },
 	{ id: 'wuthering', name: 'Wuthering Waves', defaultDays: 14 },
 	{ id: 'zenless', name: 'Zenless Zone Zero', defaultDays: 14 },
-	{ id: 'genshin', name: 'Genshin Impact', defaultDays: 21 },
+    { id: 'hsr', name: 'Honkai: Star Rail', defaultDays: 21 },
+    { id: 'nte', name: 'Neverness to everness', defaultDays: 21 },
 	{ id: 'arknights', name: 'Arknights', defaultDays: 14 },
-	{ id: 'hsr', name: 'Honkai: Star Rail', defaultDays: 21 },
-	{ id: 'duet', name: 'Duet Night Abyss', defaultDays: 14 }
+	{ id: 'arknightsE', name: 'Arknights: Endfield', defaultDays: 14 },
+    { id: 'bluearchive', name: 'Blue Archive', defaultDays: 14 },
+    { id: 'fgo', name: 'Fate/Grand Order', defaultDays: 14 },
+    { id: 'reverse1999', name: 'Reverse: 1999', defaultDays: 14 },
+	{ id: 'duet', name: 'Duet Night Abyss', defaultDays: 14 },
+    { id: 'mongil', name: 'MONGIL: STAR DIVE', defaultDays: 14 },
+    { id: 'czn', name: 'chaos zero Nightmare' , defaultDays: 21},
+	{ id: 'IN', name: 'infinity Nikki', defaultDays: 14 },
+	{ id: 'GOV', name: 'Goddess of Victory: Nikke', defaultDays: 14 },
+	{ id: 'SL', name: 'Solo leveling', defaultDays: 14 },
+	{ id: 'sp', name: 'Silver Palace', defaultDays: 14 }
 ];
 
 const STORAGE_KEY = 'gacha_banners_v1';
@@ -29,7 +40,27 @@ const GAME_FETCH_RULES = {
 	zenless: [
 		'https://zzzh.hoyoverse.com/en/news'
 	],
-	duet: []
+	duet: [
+        'https://duetnightabyss.com/en/news'
+    ],
+    nte: [
+        'https://nevernesstoeverness.com/en/news'
+    ],
+    bluearchive: [
+        'https://bluearchive.com/en/news'
+    ],
+    czn: [
+        'https://chaoszeronightmare.com/en/news'
+    ],
+    mongil: [
+        'https://mongilstardive.com/en/news'
+    ],
+    fgo: [
+        'https://fate-go.us/news'
+    ],
+    reverse1999: [
+        'https://reverse1999.com/en/news'
+    ]
 };
 
 function $(id){ return document.getElementById(id); }
@@ -85,15 +116,16 @@ function renderBanners(){
 
 		el.innerHTML = `
 			<div class="banner-head">
-				<strong>${b.gameName}</strong> — ${b.bannerName}
-				<div>
-					<button data-id="${b.id}" class="fetch">Fetch Now</button>
-					<button data-id="${b.id}" class="del">Delete</button>
-				</div>
+				<strong>${b.gameName}</strong> -- ${b.bannerName} --
+				
 			</div>
 			<div>from: ${b.startDate} — to: ${b.endDate}</div>
 			<div class="remaining">${formatRemaining(remaining)}</div>
-			<div class="source">source: ${b.sourceUrl || '—'} (${b.fetchMethod})</div>
+			<div class="source">source: ${b.sourceUrl || '-'} (${b.fetchMethod})</div>
+                <div class="banner-actions">
+					<button data-id="${b.id}" class="fetch">Fetch Now</button>
+					<button data-id="${b.id}" class="del">Delete</button>
+				</div>
 		`;
 		container.appendChild(el);
 	});
