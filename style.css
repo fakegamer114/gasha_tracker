@@ -9,9 +9,34 @@ input, select{width:100%;padding:8px;border:1px solid #ccc;border-radius:4px}
 .form-actions{display:flex;gap:8px;margin-top:12px}
 button{padding:8px 12px;border-radius:6px;border:0;background:var(--accent);color:#fff;cursor:pointer}
 button#loadPresets{background:#6b7280}
-.banner{border:1px solid #e5e7eb;padding:10px;border-radius:6px;margin:8px 0;background:#fff}
-.banner-head{display:flex;justify-content:space-between;align-items:center}
-.remaining{font-weight:600;margin-top:6px}
+.banner {
+    background: linear-gradient(145deg, #0b1220, #0f1a2e);
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 14px;
+    border-radius: 14px;
+    margin: 10px 0;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    transition: 0.2s ease;
+}
+
+.banner-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.banner-head strong {
+    font-size: 16px;
+    color: #fff;
+}
+.remaining {
+    font-size: 18px;
+    font-weight: 700;
+    color: #3b82f6;
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+}
 .source{color:var(--muted);font-size:13px;margin-top:6px}
 .add-banner, .list-banner{margin-top:24px ; padding:12px; border-radius:6px; background-color: #123; border:1px solid #2f353f}
 
@@ -26,6 +51,59 @@ button#loadPresets{background:#6b7280}
 .form-actions button{flex:0 1 auto}
 .banner-actions{display:flex;justify-content:right;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:right}
 
+
+.game-badge{
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:999px;
+    background:#3b82f620;
+    color:#60a5fa;
+    font-size:12px;
+    font-weight:600;
+}
+
+.banner-title{
+    font-size:20px;
+    font-weight:700;
+    margin-top:10px;
+    color:white;
+    margin-bottom: 10px;
+}
+
+footer {
+  padding: 20px;
+  background-color: #0a0a0a55;
+  color: #636363;
+  font-size: 12px;
+  margin-top: 200px;
+}
+.foot {  
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+ }
+.foot a{
+    color:#60a5fa;
+    text-decoration:none;
+}
+
+.foot a:hover{
+    text-decoration:underline;
+}
+.feedback-float{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#3b82f6;
+    color:white;
+    padding:10px 14px;
+    border-radius:999px;
+    text-decoration:none;
+    font-weight:600;
+    box-shadow:0 4px 10px rgba(0,0,0,0.3);
+    z-index:999;
+}
 @media (max-width:600px){
 	.container{padding:12px}
 	.banner{padding:10px;font-size:14px}

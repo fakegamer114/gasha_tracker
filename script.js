@@ -115,8 +115,11 @@ function renderBanners(){
 		const remaining = end - now;
 
 		el.innerHTML = `
-			<div class="banner-head">
-				<strong>${b.gameName}</strong> -- ${b.bannerName} --
+			
+				<div class="banner-head">
+				    <span class="game-badge">${b.gameName}</span>
+				    <strong class="banner-title">${b.bannerName}</strong>
+				</div>
 				
 			</div>
 			<div>from: ${b.startDate} — to: ${b.endDate}</div>
@@ -209,7 +212,7 @@ async function fetchSource(id){
 			alert('Could not reach the source automatically — this is almost always a CORS restriction ' +
 				'(the official site does not allow requests from browser pages on other domains). ' +
 				'You will need to update the end date manually, or paste the news text using the ' +
-				'"Parse pasted text" option if you add one.');
+				'"Parse pasted text" option ( not availble yet ) .');
 		} else {
 			alert('Failed to fetch end date: no recognizable date pattern found in the page content.');
 		}
